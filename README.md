@@ -92,15 +92,37 @@ Aplica reglas por vulnerabilidad:
 ### 5. Reportería
 Consolida veredicto, explicación, severidad, supuestos, sanitizers y contraejemplos.
 
-## Lista de herramientas y modelo utilizados
+## Lista de herramientas, MCP tools y modelo utilizados
 
-- Python 3.11+
-- `ast` para análisis estático
-- `Typer` para CLI
-- `Pydantic` para modelos
-- `Jinja2` para reporte HTML
-- `pytest` para pruebas
-- Modelo/Agente: **reglas determinísticas locales** con extensión preparada para LLM futuro
+### Herramientas de desarrollo
+
+| Herramienta | Versión | Uso |
+|---|---|---|
+| Python | 3.11+ | Lenguaje base |
+| `ast` | stdlib | Análisis estático de código fuente |
+| `Typer` | ≥0.12 | Interfaz CLI |
+| `Pydantic` | ≥2.6 | Modelos y validación de datos |
+| `Jinja2` | ≥3.1 | Generación de reporte HTML |
+| `pytest` | ≥8.0 | Pruebas unitarias |
+
+### Modelo / Agente
+
+La implementación actual usa **reglas determinísticas locales** (sin API externa), lo que permite ejecutar el validador sin credenciales ni latencia de red. El punto de extensión está en `app/agents/validator_agent.py`: reemplazar el método `validate()` con una llamada a un LLM es el único cambio necesario.
+
+El modelo objetivo para la extensión LLM es **Claude 3.5 Sonnet** (`claude-sonnet-4-6`) vía Anthropic API, por su capacidad de razonamiento sobre código y conocimiento de OWASP.
+
+### MCP Tools (Model Context Protocol)
+
+La arquitectura está preparada para integrarse con servidores MCP que expongan contexto adicional al agente. Las integraciones planificadas son:
+
+| MCP Tool | Propósito |
+|---|---|
+| `mcp__filesystem` | Leer archivos del proyecto analizado sin pasar rutas absolutas al prompt |
+| `mcp__code_search` | Búsqueda semántica en el codebase para trazabilidad interprocedural profunda |
+| `mcp__bandit` / `mcp__semgrep` | Consumir hallazgos directamente desde herramientas SAST reales como fuente de entrada |
+| `mcp__nvd` | Consultar CVEs relacionados con el patrón de vulnerabilidad detectado para enriquecer la explicación |
+
+En la versión actual estas capacidades están implementadas localmente con `ast` y heurísticas. Cuando se conecte el LLM, los MCP tools reemplazarán esas implementaciones con llamadas al servidor correspondiente, manteniendo la misma interfaz (`TraceEvidence` → `AnalysisResult`).
 
 ## Cómo lo explicaría en entrevista
 
