@@ -1,0 +1,18 @@
+{
+  "vulnerabilities": [
+    {
+      "id": "extra_01",
+      "type": "SSRF",
+      "sink_line": 5,
+      "source_line": 4,
+      "message": "Potential SSRF in fetch_url"
+    },
+    {
+      "id": "extra_02",
+      "type": "Command Injection",
+      "sink_line": 6,
+      "source_line": 5,
+      "message": "Potential command injection in safe_touch"
+    }
+  ]
+}
